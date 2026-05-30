@@ -1,0 +1,120 @@
+// Lecture Attendance System - data model
+//
+// Five entities:
+//   User        - admins, lecturers, students (role discriminates)
+//   Course      - a teachable unit; each course has one lecturer
+//   Enrollment  - many-to-many between students and courses
+//   Session     - a single class meeting; lecturer opens then closes it
+//   Attendance  - a student's confirmed presence at one session
+//
+// One-attendance-per-student-per-session is enforced by a DB unique
+// constraint on (sessionId, studentId) — see Attendance below.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite has no native enums. Role is stored as a String — one of
+// "ADMIN" | "LECTURER" | "STUDENT". The type-level constraint lives in
+// src/lib/roles.ts; the DB just trusts whatever the application writes.
+// On a Postgres deployment this would be a proper `enum Role { ... }`.
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  // Null until the user activates via their setup link and chooses a password.
+  // Admin-created accounts start with no hash; the authorize() callback in
+  // lib/auth.ts refuses logins for null-hash users with an "not activated" error.
+  passwordHash  String?
+  name          String
+  role          String
+  // Optional identifiers — only one of these is set depending on role.
+  matricNumber  String?  @unique  // students
+  staffId       String?  @unique  // lecturers
+  createdAt     DateTime @default(now())
+
+  coursesTaught       Course[]             @relation("LecturerCourses")
+  enrollments         Enrollment[]
+  attendances         Attendance[]
+  passwordSetupToken  PasswordSetupToken?
+}
+
+model PasswordSetupToken {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  code        String   @unique          // e.g. "CSC401"
+  title       String                    // e.g. "Software Engineering"
+  lecturerId  String
+  lecturer    User     @relation("LecturerCourses", fields: [lecturerId], references: [id])
+  createdAt   DateTime @default(now())
+
+  enrollments Enrollment[]
+  sessions    Session[]
+}
+
+model Enrollment {
+  studentId String
+  courseId  String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([studentId, courseId])
+  @@index([courseId])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  // Per-session secret used to sign rotating QR tokens. Means a token from
+  // one session can never be replayed against another session.
+  secret     String
+  // Six-character human-typeable code, parallel entry path to the QR.
+  // Uniqueness is enforced by a *partial* unique index (only where
+  // active = true) declared in raw SQL — Prisma can't model partial
+  // indexes directly. Closed sessions keep their code for the audit
+  // trail without blocking a new session from reusing it.
+  shortCode  String?
+  startedAt  DateTime @default(now())
+  endedAt    DateTime?
+  // Convenience flag — null endedAt also means active, but having this
+  // explicit makes admin/lecturer dashboards trivial to query.
+  active     Boolean  @default(true)
+
+  attendances Attendance[]
+
+  @@index([courseId, active])
+  @@index([shortCode, active])
+}
+
+model Attendance {
+  id         String   @id @default(cuid())
+  sessionId  String
+  studentId  String
+  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  markedAt   DateTime @default(now())
+  // Audit trail — useful when defending the system: if the same IP scanned
+  // for multiple students in quick succession, that's a red flag.
+  ipAddress  String?
+
+  // The core anti-spoof constraint: one student can only be marked present
+  // once per session, no matter how many times they scan a valid QR token.
+  @@unique([sessionId, studentId])
+  @@index([sessionId])
+}
