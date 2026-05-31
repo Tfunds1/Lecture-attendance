@@ -3,25 +3,23 @@
 @tailwind utilities;
 
 :root {
-  --background: #f1f5f9;
+  /* A calm, near-white canvas (close to slate-50) — restrained, no colour wash.
+     Hierarchy comes from the white surfaces and hairline borders sitting on it,
+     not from a tinted background. */
+  --background: #f8fafc;
   --foreground: #0f172a;
 }
 
 html, body { height: 100%; }
 body {
-  /* Soft layered background so wide pages don't read as a flat grey slab. */
   background-color: var(--background);
-  background-image:
-    radial-gradient(60rem 60rem at 110% -10%, rgba(99, 102, 241, 0.10), transparent 60%),
-    radial-gradient(50rem 50rem at -10% 0%, rgba(79, 70, 229, 0.06), transparent 55%);
-  background-attachment: fixed;
   color: var(--foreground);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-::selection { background: #c7d2fe; color: #1e1b4b; }
+::selection { background: #e0e7ff; color: #1e1b4b; }
 
 /* Tiny utility set so pages don't need to repeat the same Tailwind chains. */
 @layer components {

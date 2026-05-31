@@ -21,13 +21,6 @@ const ROLE_LABEL: Record<Role, string> = {
   STUDENT: "Student",
 };
 
-// Each role gets a distinct badge tint so the header reads at a glance.
-const ROLE_BADGE: Record<Role, string> = {
-  ADMIN: "bg-violet-100 text-violet-700",
-  LECTURER: "bg-sky-100 text-sky-700",
-  STUDENT: "bg-emerald-100 text-emerald-700",
-};
-
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
@@ -38,20 +31,20 @@ function initials(name: string) {
 export function AppShell({ name, role, nav, children }: Props) {
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/70">
         <div className="max-w-6xl mx-auto px-4">
           <div className="h-16 flex items-center justify-between gap-4">
-            {/* Brand */}
-            <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-              <span className="grid place-items-center h-9 w-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-sm transition-transform group-hover:scale-105">
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {/* Brand — a quiet monochrome mark, not a gradient badge. */}
+            <Link href="/" className="flex items-center gap-2.5 shrink-0">
+              <span className="grid place-items-center h-8 w-8 rounded-lg bg-slate-900 text-white">
+                <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="7" height="7" rx="1" />
                   <rect x="14" y="3" width="7" height="7" rx="1" />
                   <rect x="3" y="14" width="7" height="7" rx="1" />
                   <path d="M14 14h3v3M20 20v.01M17 20v.01M20 17v.01" />
                 </svg>
               </span>
-              <span className="font-bold text-lg tracking-tight text-slate-900">
+              <span className="font-semibold tracking-tight text-slate-900">
                 Attendance
               </span>
             </Link>
@@ -63,15 +56,15 @@ export function AppShell({ name, role, nav, children }: Props) {
               ))}
             </nav>
 
-            {/* User cluster */}
+            {/* User cluster — identity through weight, not colour. */}
             <div className="flex items-center gap-3">
               <div className="hidden sm:flex items-center gap-2.5">
-                <span className="grid place-items-center h-9 w-9 rounded-full bg-brand-100 text-brand-700 text-xs font-bold ring-1 ring-brand-200">
+                <span className="grid place-items-center h-8 w-8 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold ring-1 ring-slate-200">
                   {initials(name)}
                 </span>
                 <span className="leading-tight">
-                  <span className="block text-sm font-semibold text-slate-900">{name}</span>
-                  <span className={`badge ${ROLE_BADGE[role]} mt-0.5`}>{ROLE_LABEL[role]}</span>
+                  <span className="block text-sm font-medium text-slate-900">{name}</span>
+                  <span className="block text-xs text-slate-500">{ROLE_LABEL[role]}</span>
                 </span>
               </div>
               <form
@@ -100,13 +93,13 @@ export function AppShell({ name, role, nav, children }: Props) {
       </header>
 
       <main className="flex-1">
-        <div className="max-w-6xl mx-auto px-4 py-8 animate-fade-in-up">{children}</div>
+        <div className="max-w-6xl mx-auto px-4 py-8 animate-fade-in">{children}</div>
       </main>
 
-      <footer className="border-t border-slate-200/80">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+      <footer className="border-t border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
           <span>QR Lecture Attendance System</span>
-          <span>© {new Date().getFullYear()} · All rights reserved</span>
+          <span>© {new Date().getFullYear()}</span>
         </div>
       </footer>
     </div>

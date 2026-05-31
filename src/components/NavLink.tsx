@@ -20,10 +20,10 @@ export function NavLink({ href, label }: { href: string; label: string }) {
       href={href}
       aria-current={active ? "page" : undefined}
       className={[
-        "relative rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        "relative rounded-md px-3 py-1.5 text-sm transition-colors",
         active
-          ? "text-brand-700 bg-brand-50"
-          : "text-slate-600 hover:text-slate-900 hover:bg-slate-100",
+          ? "font-semibold text-slate-900 bg-slate-100"
+          : "font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50",
       ].join(" ")}
     >
       {label}
