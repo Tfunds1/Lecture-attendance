@@ -3,15 +3,26 @@
 import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { EnrollStudentsForm } from "./EnrollStudentsForm";
 
-async function enrollStudent(courseId: string, formData: FormData) {
+async function enrollStudents(courseId: string, formData: FormData) {
   "use server";
-  const studentId = String(formData.get("studentId") ?? "");
-  if (!studentId) return;
-  await db.enrollment.upsert({
-    where: { studentId_courseId: { studentId, courseId } },
-    create: { studentId, courseId },
-    update: {},
+  const ids = formData.getAll("studentId").map(String).filter(Boolean);
+  if (ids.length === 0) return;
+
+  // Trust nothing from the form: keep only ids that really are students. This
+  // drops any tampered or stale id rather than creating a bogus enrollment.
+  const valid = await db.user.findMany({
+    where: { id: { in: ids }, role: "STUDENT" },
+    select: { id: true },
+  });
+  if (valid.length === 0) return;
+
+  // One insert; skipDuplicates makes a re-submit of an already-enrolled student
+  // a no-op instead of a unique-constraint error.
+  await db.enrollment.createMany({
+    data: valid.map((s) => ({ studentId: s.id, courseId })),
+    skipDuplicates: true,
   });
   revalidatePath(`/admin/courses/${courseId}`);
 }
@@ -46,7 +57,14 @@ export default async function AdminCourseDetailPage({
     orderBy: { name: "asc" },
   });
 
-  const enrollBound = enrollStudent.bind(null, id);
+  const enrollBound = enrollStudents.bind(null, id);
+
+  // Plain, secret-free shape for the client multi-select.
+  const studentOptions = availableStudents.map((s) => ({
+    id: s.id,
+    name: s.name,
+    matricNumber: s.matricNumber,
+  }));
 
   return (
     <div className="space-y-6">
@@ -91,25 +109,13 @@ export default async function AdminCourseDetailPage({
         </div>
 
         <div className="card p-4">
-          <h2 className="font-semibold mb-3">Enroll a student</h2>
+          <h2 className="font-semibold mb-3">Enroll students</h2>
           {availableStudents.length === 0 ? (
             <p className="text-sm text-slate-500">
               All students are already enrolled.
             </p>
           ) : (
-            <form action={enrollBound} className="space-y-3">
-              <select name="studentId" className="input" required>
-                <option value="">Select a student…</option>
-                {availableStudents.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.matricNumber})
-                  </option>
-                ))}
-              </select>
-              <button className="btn-primary w-full" type="submit">
-                Enroll
-              </button>
-            </form>
+            <EnrollStudentsForm enrollStudents={enrollBound} students={studentOptions} />
           )}
         </div>
       </div>
