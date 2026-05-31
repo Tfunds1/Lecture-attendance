@@ -11,6 +11,9 @@ import { SlideOver } from "@/components/SlideOver";
 import { StatusBanner } from "@/components/StatusBanner";
 import { CoursesTable, type CourseRowVM } from "./CoursesTable";
 import { AddCourseForm } from "./AddCourseForm";
+import { CourseBulkImportCard } from "./CourseBulkImportCard";
+import type { CourseImportState } from "./import-shared";
+import { importCoursesFromCsv } from "./import-server";
 
 const createCourseSchema = z.object({
   code: z.string().min(3).max(20),
@@ -49,6 +52,24 @@ async function createCourse(formData: FormData) {
 
   revalidatePath("/admin/courses");
   redirect("/admin/courses?created=" + encodeURIComponent(parsed.data.code));
+}
+
+async function bulkImportCourses(
+  _prev: CourseImportState,
+  formData: FormData,
+): Promise<CourseImportState> {
+  "use server";
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, message: "Please choose a CSV file.", created: [], skipped: [] };
+  }
+
+  // All validation + DB work lives in importCoursesFromCsv (import-server.ts) so
+  // it stays unit-testable; this action just feeds it the file and refreshes the
+  // list when something was created.
+  const result = await importCoursesFromCsv(await file.text());
+  if (result.created.length > 0) revalidatePath("/admin/courses");
+  return result;
 }
 
 export default async function AdminCoursesPage({
@@ -92,12 +113,20 @@ export default async function AdminCoursesPage({
             Create courses, assign lecturers, and manage enrollments.
           </p>
         </div>
-        <Link href="/admin/courses?panel=new" className="btn-primary text-sm">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Add course
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/admin/courses?panel=import" className="btn-ghost text-sm">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+            </svg>
+            Import CSV
+          </Link>
+          <Link href="/admin/courses?panel=new" className="btn-primary text-sm">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add course
+          </Link>
+        </div>
       </div>
 
       {/* Status banners — dismiss by navigating back to the clean URL. */}
@@ -122,6 +151,15 @@ export default async function AdminCoursesPage({
           closeHref="/admin/courses"
         >
           <AddCourseForm createCourse={createCourse} lecturers={lecturers} />
+        </SlideOver>
+      )}
+      {panel === "import" && (
+        <SlideOver
+          title="Import courses from CSV"
+          description="Create many courses at once."
+          closeHref="/admin/courses"
+        >
+          <CourseBulkImportCard action={bulkImportCourses} />
         </SlideOver>
       )}
     </div>

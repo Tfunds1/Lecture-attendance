@@ -1,20 +1,20 @@
 "use client";
 
-// Bulk-import card for /admin/users — a three-step "validate, preview, confirm"
-// flow that mirrors how production tools (Stripe, Mailchimp, Google Workspace)
-// handle CSV import:
+// Bulk-import card for /admin/courses — a three-step "validate, preview, confirm"
+// flow. Mirrors src/app/admin/users/BulkImportCard.tsx (and shares its
+// field-agnostic UI via @/components/csv-import-ui); the differences are purely
+// in the columns (code/title/lecturer) and the result summary (created courses
+// have no setup-email step, unlike created users).
 //
 //   1. Upload   — drag/drop or pick a .csv (type + size checked client-side).
 //   2. Preview  — we parse and validate the file IN THE BROWSER and show a
 //                 per-row breakdown (ready vs error) before anything is written.
-//                 Nothing hits the DB at this stage.
-//   3. Done     — on confirm, the file is sent to the bulkImportUsers server
-//                 action, which RE-validates with the same shared code and
-//                 creates the valid rows, then we show the result summary.
+//   3. Done     — on confirm, the file is sent to the bulkImportCourses server
+//                 action, which RE-validates with the same shared code, resolves
+//                 each lecturer, creates the valid rows, then shows the summary.
 //
 // The parse/validate rules live in ./import-shared so the preview here can't
-// drift from what the server enforces. We use useActionState (React 19) because
-// the server result is richer than a redirect query string can carry.
+// drift from what the server enforces.
 
 import { useActionState, useEffect, useRef, useState } from "react";
 
@@ -29,37 +29,40 @@ import {
   Steps,
   UploadIcon,
 } from "@/components/csv-import-ui";
-import { buildPreview, type PreviewResult } from "./import-shared";
+import {
+  buildCoursePreview,
+  type CourseImportState,
+  type CoursePreviewResult,
+} from "./import-shared";
 
-export type ImportState = {
-  ok: boolean;
-  // Set only for top-level failures (no file, bad header, file too big).
-  message?: string;
-  created: { name: string; email: string; setupUrl: string; emailSent: boolean }[];
-  skipped: { row: number; email: string; reason: string }[];
+export const emptyCourseImportState: CourseImportState = {
+  ok: false,
+  created: [],
+  skipped: [],
 };
-
-export const emptyImportState: ImportState = { ok: false, created: [], skipped: [] };
 
 // A ready-to-fill template, generated in the browser so we don't need a static
 // asset or an extra route. The header row names must match what the server
-// action looks for.
+// action looks for. `lecturer` is the lecturer's staff ID or email.
 const TEMPLATE_CSV =
-  "name,email,role,identifier\n" +
-  "Jane Student,jane@example.com,STUDENT,CSC-2021-001\n" +
-  "John Lecturer,john@example.com,LECTURER,STAFF-1023\n";
+  "code,title,lecturer\n" +
+  "CSC401,Software Engineering,STAFF-1023\n" +
+  "CSC402,Operating Systems,john@example.com\n";
 
-export function BulkImportCard({
+export function CourseBulkImportCard({
   action,
 }: {
-  action: (prev: ImportState, formData: FormData) => Promise<ImportState>;
+  action: (
+    prev: CourseImportState,
+    formData: FormData,
+  ) => Promise<CourseImportState>;
 }) {
-  const [state, formAction, pending] = useActionState(action, emptyImportState);
+  const [state, formAction, pending] = useActionState(action, emptyCourseImportState);
   const inputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState(0);
   const [dragActive, setDragActive] = useState(false);
-  const [preview, setPreview] = useState<PreviewResult | null>(null);
+  const [preview, setPreview] = useState<CoursePreviewResult | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   // "Import another file" dismisses a finished result; reset each time a fresh
   // server result arrives so the next import's summary still shows.
@@ -80,7 +83,7 @@ export function BulkImportCard({
   }, [state]);
 
   function downloadTemplate() {
-    download(TEMPLATE_CSV, "users-template.csv");
+    download(TEMPLATE_CSV, "courses-template.csv");
   }
 
   // Put the chosen file into the hidden <input> so the form submits it exactly
@@ -114,7 +117,7 @@ export function BulkImportCard({
       return;
     }
     setFile(file);
-    setPreview(buildPreview(await file.text()));
+    setPreview(buildCoursePreview(await file.text()));
   }
 
   function clearFile() {
@@ -127,10 +130,10 @@ export function BulkImportCard({
     if (!preview?.ok) return;
     const rows = preview.rows.filter((r) => !r.valid);
     const csv =
-      "row,name,email,role,identifier,error\n" +
+      "row,code,title,lecturer,error\n" +
       rows
         .map((r) =>
-          [r.rowNum, r.raw.name, r.raw.email, r.raw.role, r.raw.identifier, r.valid ? "" : r.error]
+          [r.rowNum, r.raw.code, r.raw.title, r.raw.lecturer, r.valid ? "" : r.error]
             .map(csvCell)
             .join(","),
         )
@@ -138,7 +141,6 @@ export function BulkImportCard({
     download(csv, "import-errors.csv");
   }
 
-  const failedEmails = state.created.filter((c) => !c.emailSent);
   const currentStep = showResult ? 3 : preview ? 2 : 1;
 
   return (
@@ -171,7 +173,7 @@ export function BulkImportCard({
         {showResult ? (
           <div className="space-y-3 text-sm">
             <div className="rounded border border-emerald-300 bg-emerald-50 p-3 text-emerald-800">
-              Created <strong>{state.created.length}</strong> user(s).{" "}
+              Created <strong>{state.created.length}</strong> course(s).{" "}
               {state.skipped.length > 0 && (
                 <>
                   Skipped <strong>{state.skipped.length}</strong> row(s) — see below.
@@ -186,7 +188,7 @@ export function BulkImportCard({
                   <thead className="text-left text-slate-500 border-b border-slate-200">
                     <tr>
                       <th className="py-1">Row</th>
-                      <th>Email</th>
+                      <th>Code</th>
                       <th>Reason</th>
                     </tr>
                   </thead>
@@ -194,33 +196,12 @@ export function BulkImportCard({
                     {state.skipped.map((s, i) => (
                       <tr key={i} className="border-b border-slate-100">
                         <td className="py-1 text-slate-500">{s.row}</td>
-                        <td className="text-slate-600">{s.email}</td>
+                        <td className="text-slate-600">{s.code}</td>
                         <td className="text-amber-700">{s.reason}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
-
-            {failedEmails.length > 0 && (
-              <div>
-                <h3 className="font-medium text-slate-700 mb-1">
-                  Email not sent — share these links manually
-                </h3>
-                <ul className="space-y-2">
-                  {failedEmails.map((c, i) => (
-                    <li key={i}>
-                      <span className="text-slate-600">{c.email}</span>
-                      <input
-                        className="input mt-1 w-full font-mono text-xs"
-                        value={c.setupUrl}
-                        readOnly
-                        onFocus={(e) => e.currentTarget.select()}
-                      />
-                    </li>
-                  ))}
-                </ul>
               </div>
             )}
 
@@ -260,9 +241,9 @@ export function BulkImportCard({
                 <PreviewTable preview={preview} />
 
                 <p className="text-xs text-slate-500">
-                  Emails or IDs that already exist in the system can only be
-                  detected during import — they&apos;ll appear as skipped rows
-                  on the next step.
+                  A code that already exists, or a lecturer we can&apos;t find,
+                  can only be detected during import — those rows will appear as
+                  skipped on the next step.
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3">
@@ -334,9 +315,9 @@ export function BulkImportCard({
       </form>
 
       <p className="text-xs text-slate-500 mt-3">
-        Columns: <code>name</code>, <code>email</code>, <code>role</code>{" "}
-        (STUDENT or LECTURER), <code>identifier</code> (matric / staff ID). Each
-        created user is emailed their setup link.
+        Columns: <code>code</code>, <code>title</code>, <code>lecturer</code>{" "}
+        (the lecturer&apos;s staff ID or email). The lecturer must already have
+        an account.
       </p>
 
       {/* Top-level server error with no rows processed (e.g. file changed between
@@ -353,7 +334,7 @@ export function BulkImportCard({
 function PreviewTable({
   preview,
 }: {
-  preview: Extract<PreviewResult, { ok: true }>;
+  preview: Extract<CoursePreviewResult, { ok: true }>;
 }) {
   const shown = preview.rows.slice(0, PREVIEW_DISPLAY_LIMIT);
   const hidden = preview.rows.length - shown.length;
@@ -363,9 +344,9 @@ function PreviewTable({
         <thead className="bg-slate-50 text-left text-slate-500">
           <tr>
             <th className="w-8 py-1.5 pl-2"></th>
-            <th className="py-1.5">Name</th>
-            <th>Email</th>
-            <th>Role</th>
+            <th className="py-1.5">Code</th>
+            <th>Title</th>
+            <th>Lecturer</th>
             <th>Note</th>
           </tr>
         </thead>
@@ -386,9 +367,9 @@ function PreviewTable({
                   </span>
                 )}
               </td>
-              <td className="py-1.5 text-slate-700">{r.raw.name || "—"}</td>
-              <td className="text-slate-600">{r.raw.email || "—"}</td>
-              <td className="text-slate-600">{r.raw.role || "—"}</td>
+              <td className="py-1.5 font-mono text-slate-700">{r.raw.code || "—"}</td>
+              <td className="text-slate-600">{r.raw.title || "—"}</td>
+              <td className="text-slate-600">{r.raw.lecturer || "—"}</td>
               <td className={r.valid ? "text-slate-400" : "text-red-600"}>
                 {r.valid ? "Ready" : r.error}
               </td>

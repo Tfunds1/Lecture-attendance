@@ -9,6 +9,8 @@
 
 import { z } from "zod";
 
+import { parseCsv } from "@/lib/csv";
+
 // Cap per import so a giant paste can't tie up the server creating thousands of
 // rows (each row does a DB write + an email send).
 export const MAX_IMPORT_ROWS = 500;
@@ -47,51 +49,6 @@ export type PreviewResult =
       validCount: number;
       errorCount: number;
     };
-
-// Minimal RFC-4180-ish CSV parser: handles quoted fields, commas and newlines
-// inside quotes, and escaped double-quotes (""). Returns rows of string cells.
-// Kept small and dependency-free so it's easy to explain — a real CSV (names
-// like "Doe, Jane") parses correctly without pulling in a library.
-export function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (inQuotes) {
-      if (c === '"') {
-        if (text[i + 1] === '"') {
-          field += '"';
-          i++; // skip the escaped quote
-        } else {
-          inQuotes = false;
-        }
-      } else {
-        field += c;
-      }
-    } else if (c === '"') {
-      inQuotes = true;
-    } else if (c === ",") {
-      row.push(field);
-      field = "";
-    } else if (c === "\n") {
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = "";
-    } else if (c !== "\r") {
-      field += c;
-    }
-  }
-  // Flush the final field/row when the file doesn't end in a newline.
-  if (field.length > 0 || row.length > 0) {
-    row.push(field);
-    rows.push(row);
-  }
-  return rows;
-}
 
 // Parse + validate a CSV string into a row-by-row preview. Detects:
 //   - whole-file problems (empty, missing columns, too many rows)
