@@ -54,10 +54,19 @@ model PasswordSetupToken {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// Nigerian academic calendar has two semesters: Harmattan (dry season) and
+// Rain. Unlike Role (a String, see note above), this is a real Postgres enum —
+// the set is closed and never grows, so the DB can enforce it directly.
+enum Semester {
+  HARMATTAN
+  RAIN
+}
+
 model Course {
   id          String   @id @default(cuid())
   code        String   @unique          // e.g. "CSC401"
   title       String                    // e.g. "Software Engineering"
+  semester    Semester @default(HARMATTAN)
   lecturerId  String
   lecturer    User     @relation("LecturerCourses", fields: [lecturerId], references: [id])
   createdAt   DateTime @default(now())

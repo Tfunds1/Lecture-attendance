@@ -86,13 +86,13 @@ async function main() {
 
   // Courses
   const csc401 = await prisma.course.create({
-    data: { code: "CSC401", title: "Software Engineering",     lecturerId: drAdebayo.id },
+    data: { code: "CSC401", title: "Software Engineering",     semester: "HARMATTAN", lecturerId: drAdebayo.id },
   });
   const csc403 = await prisma.course.create({
-    data: { code: "CSC403", title: "Database Systems",         lecturerId: drAdebayo.id },
+    data: { code: "CSC403", title: "Database Systems",         semester: "RAIN",      lecturerId: drAdebayo.id },
   });
   const csc411 = await prisma.course.create({
-    data: { code: "CSC411", title: "Artificial Intelligence",  lecturerId: profIbrahim.id },
+    data: { code: "CSC411", title: "Artificial Intelligence",  semester: "RAIN",      lecturerId: profIbrahim.id },
   });
 
   // Enrollments: all 6 students take CSC401; first 4 take CSC403; last 3 take CSC411.

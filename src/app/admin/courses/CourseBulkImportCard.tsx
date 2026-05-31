@@ -45,9 +45,9 @@ export const emptyCourseImportState: CourseImportState = {
 // asset or an extra route. The header row names must match what the server
 // action looks for. `lecturer` is the lecturer's staff ID or email.
 const TEMPLATE_CSV =
-  "code,title,lecturer\n" +
-  "CSC401,Software Engineering,STAFF-1023\n" +
-  "CSC402,Operating Systems,john@example.com\n";
+  "code,title,lecturer,semester\n" +
+  "CSC401,Software Engineering,STAFF-1023,HARMATTAN\n" +
+  "CSC402,Operating Systems,john@example.com,RAIN\n";
 
 export function CourseBulkImportCard({
   action,
@@ -130,10 +130,10 @@ export function CourseBulkImportCard({
     if (!preview?.ok) return;
     const rows = preview.rows.filter((r) => !r.valid);
     const csv =
-      "row,code,title,lecturer,error\n" +
+      "row,code,title,lecturer,semester,error\n" +
       rows
         .map((r) =>
-          [r.rowNum, r.raw.code, r.raw.title, r.raw.lecturer, r.valid ? "" : r.error]
+          [r.rowNum, r.raw.code, r.raw.title, r.raw.lecturer, r.raw.semester, r.valid ? "" : r.error]
             .map(csvCell)
             .join(","),
         )
@@ -316,8 +316,9 @@ export function CourseBulkImportCard({
 
       <p className="text-xs text-slate-500 mt-3">
         Columns: <code>code</code>, <code>title</code>, <code>lecturer</code>{" "}
-        (the lecturer&apos;s staff ID or email). The lecturer must already have
-        an account.
+        (the lecturer&apos;s staff ID or email), <code>semester</code>{" "}
+        (<code>HARMATTAN</code> or <code>RAIN</code>). The lecturer must already
+        have an account.
       </p>
 
       {/* Top-level server error with no rows processed (e.g. file changed between
@@ -347,6 +348,7 @@ function PreviewTable({
             <th className="py-1.5">Code</th>
             <th>Title</th>
             <th>Lecturer</th>
+            <th>Semester</th>
             <th>Note</th>
           </tr>
         </thead>
@@ -370,6 +372,7 @@ function PreviewTable({
               <td className="py-1.5 font-mono text-slate-700">{r.raw.code || "—"}</td>
               <td className="text-slate-600">{r.raw.title || "—"}</td>
               <td className="text-slate-600">{r.raw.lecturer || "—"}</td>
+              <td className="text-slate-600">{r.raw.semester || "—"}</td>
               <td className={r.valid ? "text-slate-400" : "text-red-600"}>
                 {r.valid ? "Ready" : r.error}
               </td>

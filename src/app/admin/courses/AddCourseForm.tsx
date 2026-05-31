@@ -65,6 +65,14 @@ export function AddCourseForm({
         </select>
       </div>
 
+      <div>
+        <label className="label" htmlFor="course-semester">Semester</label>
+        <select id="course-semester" name="semester" className="input" defaultValue="HARMATTAN" required>
+          <option value="HARMATTAN">Harmattan</option>
+          <option value="RAIN">Rain</option>
+        </select>
+      </div>
+
       <SubmitButton />
 
       <p className="flex items-start gap-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">

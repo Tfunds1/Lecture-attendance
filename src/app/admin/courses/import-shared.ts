@@ -15,7 +15,7 @@ import { parseCsv } from "@/lib/csv";
 // Cap per import so a giant paste can't tie up the server.
 export const MAX_IMPORT_ROWS = 500;
 
-export const REQUIRED_HEADERS = ["code", "title", "lecturer"] as const;
+export const REQUIRED_HEADERS = ["code", "title", "lecturer", "semester"] as const;
 
 // Same field rules as the single-course create form (createCourseSchema in
 // page.tsx), so a row imported in bulk is held to exactly the same standard as
@@ -23,10 +23,14 @@ export const REQUIRED_HEADERS = ["code", "title", "lecturer"] as const;
 // CSV can't carry the lecturer's internal database id, so we reference them by
 // something an admin can actually type. Resolving it to a real lecturer is a
 // DB lookup, so it can only happen on import (see bulkImportCourses), not here.
+// `semester` is the Course.semester enum, required, UPPERCASE and case-sensitive.
 export const courseRowSchema = z.object({
   code: z.string().min(3).max(20),
   title: z.string().min(3),
   lecturer: z.string().min(1),
+  semester: z.enum(["HARMATTAN", "RAIN"], {
+    errorMap: () => ({ message: "must be HARMATTAN or RAIN" }),
+  }),
 });
 export type CourseRow = z.infer<typeof courseRowSchema>;
 
@@ -36,6 +40,7 @@ export type RawCourseRow = {
   code: string;
   title: string;
   lecturer: string;
+  semester: string;
 };
 
 export type CourseImportRowResult =
@@ -84,6 +89,7 @@ export function buildCoursePreview(text: string): CoursePreviewResult {
     code: header.indexOf("code"),
     title: header.indexOf("title"),
     lecturer: header.indexOf("lecturer"),
+    semester: header.indexOf("semester"),
   };
   const missing = REQUIRED_HEADERS.filter((h) => col[h] === -1);
   if (missing.length > 0) {
@@ -113,6 +119,9 @@ export function buildCoursePreview(text: string): CoursePreviewResult {
       code: (cells[col.code] ?? "").trim(),
       title: (cells[col.title] ?? "").trim(),
       lecturer: (cells[col.lecturer] ?? "").trim(),
+      // Not upper-cased on purpose: semester is case-sensitive, so "harmattan"
+      // is rejected rather than silently accepted.
+      semester: (cells[col.semester] ?? "").trim(),
     };
 
     const parsed = courseRowSchema.safeParse(raw);

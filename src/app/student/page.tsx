@@ -41,6 +41,42 @@ export default async function StudentHome() {
     );
   }
 
+  type Enrolled = (typeof enrollments)[number];
+  function renderCard({ course }: Enrolled) {
+    const total = course._count.sessions;
+    const mine = courseToMyAttendance.get(course.id) ?? 0;
+    const pct = total === 0 ? 0 : Math.round((mine / total) * 100);
+    const tone = pct >= 75 ? "green" : pct >= 50 ? "amber" : "red";
+    const text = { green: "text-green-600", amber: "text-amber-600", red: "text-red-600" }[tone];
+    const bar = { green: "bg-green-500", amber: "bg-amber-500", red: "bg-red-500" }[tone];
+    return (
+      <Link
+        key={course.id}
+        href={`/student/courses/${course.id}`}
+        className="card card-hover p-5 group"
+      >
+        <div className="font-mono text-xs font-semibold text-brand-700">{course.code}</div>
+        <div className="font-semibold text-slate-900 mt-1 group-hover:text-brand-700 transition-colors">{course.title}</div>
+        <div className="text-xs text-slate-500 mt-1">Lecturer: {course.lecturer.name}</div>
+        <div className="mt-4">
+          <div className="flex justify-between items-baseline text-sm">
+            <span className="text-slate-500">{mine} / {total} sessions</span>
+            <span className={`font-semibold tabular-nums ${text}`}>{pct}%</span>
+          </div>
+          <div className="mt-1.5 h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div className={`h-full rounded-full transition-all ${bar}`} style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  // Group into the two semesters; a section with no courses is hidden entirely.
+  const sections = [
+    { label: "Harmattan Semester", items: enrollments.filter((e) => e.course.semester === "HARMATTAN") },
+    { label: "Rain Semester", items: enrollments.filter((e) => e.course.semester === "RAIN") },
+  ];
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
@@ -69,36 +105,18 @@ export default async function StudentHome() {
           <p className="text-slate-500">You're not enrolled in any courses yet.</p>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 gap-4">
-          {enrollments.map(({ course }) => {
-            const total = course._count.sessions;
-            const mine = courseToMyAttendance.get(course.id) ?? 0;
-            const pct = total === 0 ? 0 : Math.round((mine / total) * 100);
-            const tone = pct >= 75 ? "green" : pct >= 50 ? "amber" : "red";
-            const text = { green: "text-green-600", amber: "text-amber-600", red: "text-red-600" }[tone];
-            const bar = { green: "bg-green-500", amber: "bg-amber-500", red: "bg-red-500" }[tone];
-            return (
-              <Link
-                key={course.id}
-                href={`/student/courses/${course.id}`}
-                className="card card-hover p-5 group"
-              >
-                <div className="font-mono text-xs font-semibold text-brand-700">{course.code}</div>
-                <div className="font-semibold text-slate-900 mt-1 group-hover:text-brand-700 transition-colors">{course.title}</div>
-                <div className="text-xs text-slate-500 mt-1">Lecturer: {course.lecturer.name}</div>
-                <div className="mt-4">
-                  <div className="flex justify-between items-baseline text-sm">
-                    <span className="text-slate-500">{mine} / {total} sessions</span>
-                    <span className={`font-semibold tabular-nums ${text}`}>{pct}%</span>
-                  </div>
-                  <div className="mt-1.5 h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${bar}`} style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        sections.map((s) =>
+          s.items.length === 0 ? null : (
+            <section key={s.label} className="space-y-4">
+              <h2 className="text-lg font-semibold tracking-tight text-slate-900 border-b border-slate-200 pb-2">
+                {s.label}
+              </h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                {s.items.map(renderCard)}
+              </div>
+            </section>
+          ),
+        )
       )}
     </div>
   );

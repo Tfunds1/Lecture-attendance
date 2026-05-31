@@ -49,7 +49,7 @@ export async function importCoursesFromCsv(
       continue;
     }
 
-    const { code, title, lecturer } = row.data;
+    const { code, title, lecturer, semester } = row.data;
     const match =
       byEmail.get(lecturer.toLowerCase()) ?? byStaffId.get(lecturer.toLowerCase());
     if (!match) {
@@ -58,7 +58,7 @@ export async function importCoursesFromCsv(
     }
 
     try {
-      await db.course.create({ data: { code, title, lecturerId: match.id } });
+      await db.course.create({ data: { code, title, semester, lecturerId: match.id } });
       created.push({ code, title, lecturerName: match.name });
     } catch (err) {
       // Course.code is unique. A clash trips the unique constraint (Prisma

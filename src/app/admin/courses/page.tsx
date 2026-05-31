@@ -18,6 +18,7 @@ import { importCoursesFromCsv } from "./import-server";
 const createCourseSchema = z.object({
   code: z.string().min(3).max(20),
   title: z.string().min(3),
+  semester: z.enum(["HARMATTAN", "RAIN"]),
   lecturerId: z.string().min(1),
 });
 
@@ -26,6 +27,7 @@ async function createCourse(formData: FormData) {
   const parsed = createCourseSchema.safeParse({
     code: formData.get("code"),
     title: formData.get("title"),
+    semester: formData.get("semester"),
     lecturerId: formData.get("lecturerId"),
   });
   if (!parsed.success) throw new Error("Invalid input");
@@ -98,6 +100,7 @@ export default async function AdminCoursesPage({
     id: c.id,
     code: c.code,
     title: c.title,
+    semester: c.semester,
     lecturerName: c.lecturer.name,
     students: c._count.enrollments,
     sessions: c._count.sessions,

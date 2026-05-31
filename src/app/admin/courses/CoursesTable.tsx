@@ -7,15 +7,22 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import type { Semester } from "@prisma/client";
+
+import { SEMESTER_BADGE, SEMESTER_LABELS } from "@/lib/semester";
 
 export type CourseRowVM = {
   id: string;
   code: string;
   title: string;
+  semester: Semester;
   lecturerName: string;
   students: number;
   sessions: number;
 };
+
+// "ALL" is the unfiltered view; the others narrow to one semester.
+type SemesterFilter = "ALL" | Semester;
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -26,14 +33,16 @@ function initials(name: string) {
 
 export function CoursesTable({ courses }: { courses: CourseRowVM[] }) {
   const [query, setQuery] = useState("");
+  const [semester, setSemester] = useState<SemesterFilter>("ALL");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return courses;
-    return courses.filter((c) =>
-      `${c.code} ${c.title} ${c.lecturerName}`.toLowerCase().includes(q),
-    );
-  }, [courses, query]);
+    return courses.filter((c) => {
+      if (semester !== "ALL" && c.semester !== semester) return false;
+      if (!q) return true;
+      return `${c.code} ${c.title} ${c.lecturerName}`.toLowerCase().includes(q);
+    });
+  }, [courses, query, semester]);
 
   // Whole-catalogue empty state — distinct from "no search matches".
   if (courses.length === 0) {
@@ -59,8 +68,8 @@ export function CoursesTable({ courses }: { courses: CourseRowVM[] }) {
   return (
     <div className="card overflow-hidden">
       {/* Toolbar */}
-      <div className="border-b border-slate-200 p-4">
-        <div className="relative sm:max-w-xs">
+      <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center">
+        <div className="relative sm:max-w-xs sm:flex-1">
           <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
           </svg>
@@ -73,6 +82,16 @@ export function CoursesTable({ courses }: { courses: CourseRowVM[] }) {
             aria-label="Search courses"
           />
         </div>
+        <select
+          value={semester}
+          onChange={(e) => setSemester(e.target.value as SemesterFilter)}
+          className="input sm:w-44"
+          aria-label="Filter by semester"
+        >
+          <option value="ALL">All semesters</option>
+          <option value="HARMATTAN">Harmattan</option>
+          <option value="RAIN">Rain</option>
+        </select>
       </div>
 
       {/* Table */}
@@ -82,6 +101,7 @@ export function CoursesTable({ courses }: { courses: CourseRowVM[] }) {
             <tr className="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
               <th className="px-4 py-2.5">Course</th>
               <th className="px-4 py-2.5">Lecturer</th>
+              <th className="px-4 py-2.5">Semester</th>
               <th className="px-4 py-2.5 text-right">Students</th>
               <th className="px-4 py-2.5 text-right">Sessions</th>
               <th className="w-px px-4 py-2.5" />
@@ -90,14 +110,17 @@ export function CoursesTable({ courses }: { courses: CourseRowVM[] }) {
           <tbody className="divide-y divide-slate-100">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center">
-                  <p className="text-sm text-slate-500">No courses match your search.</p>
+                <td colSpan={6} className="px-4 py-12 text-center">
+                  <p className="text-sm text-slate-500">No courses match your filters.</p>
                   <button
                     type="button"
-                    onClick={() => setQuery("")}
+                    onClick={() => {
+                      setQuery("");
+                      setSemester("ALL");
+                    }}
                     className="mt-2 text-sm font-medium text-brand-600 hover:text-brand-700"
                   >
-                    Clear search
+                    Clear filters
                   </button>
                 </td>
               </tr>
@@ -119,6 +142,11 @@ export function CoursesTable({ courses }: { courses: CourseRowVM[] }) {
                       </span>
                       <span className="truncate text-slate-700">{c.lecturerName}</span>
                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`badge ${SEMESTER_BADGE[c.semester]}`}>
+                      {SEMESTER_LABELS[c.semester]}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-600">{c.students}</td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-600">{c.sessions}</td>
