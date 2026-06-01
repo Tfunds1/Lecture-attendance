@@ -8,7 +8,9 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { SlideOver } from "@/components/SlideOver";
+import { Dialog } from "@/components/Dialog";
 import { StatusBanner } from "@/components/StatusBanner";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { CoursesTable, type CourseRowVM } from "./CoursesTable";
 import { AddCourseForm } from "./AddCourseForm";
 import { CourseBulkImportCard } from "./CourseBulkImportCard";
@@ -108,29 +110,26 @@ export default async function AdminCoursesPage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="page-title">Courses</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Create courses, assign lecturers, and manage enrollments.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href="/admin/courses?panel=import" className="btn-ghost text-sm">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-            </svg>
-            Import CSV
-          </Link>
-          <Link href="/admin/courses?panel=new" className="btn-primary text-sm">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Add course
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Courses"
+        subtitle="Manage courses, assign lecturers, and group by semester."
+        actions={
+          <>
+            <Link href="/admin/courses?panel=import" className="btn-ghost text-sm">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+              </svg>
+              Bulk upload
+            </Link>
+            <Link href="/admin/courses?panel=new" className="btn-primary text-sm">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Add course
+            </Link>
+          </>
+        }
+      />
 
       {/* Status banners — dismiss by navigating back to the clean URL. */}
       {created && (
@@ -148,13 +147,13 @@ export default async function AdminCoursesPage({
 
       {/* URL-driven slide-over */}
       {panel === "new" && (
-        <SlideOver
+        <Dialog
           title="Add course"
           description="Create a course and assign its lecturer."
           closeHref="/admin/courses"
         >
           <AddCourseForm createCourse={createCourse} lecturers={lecturers} />
-        </SlideOver>
+        </Dialog>
       )}
       {panel === "import" && (
         <SlideOver

@@ -20,7 +20,9 @@ import { db } from "@/lib/db";
 import type { Role } from "@/lib/roles";
 import { sendPasswordSetupEmail } from "@/lib/email";
 import { SlideOver } from "@/components/SlideOver";
+import { Dialog } from "@/components/Dialog";
 import { StatusBanner } from "@/components/StatusBanner";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { SetupLinkCard } from "./SetupLinkCard";
 import { AddUserForm } from "./AddUserForm";
 import { UsersTable, type UserRowVM } from "./UsersTable";
@@ -263,30 +265,46 @@ export default async function AdminUsersPage({
     active: u.passwordHash != null,
   }));
 
+  const totalUsers = users.length;
+  const activeUsers = users.filter((u) => u.active).length;
+  const pendingUsers = totalUsers - activeUsers;
+  const userStats = [
+    { label: "Total users", value: totalUsers },
+    { label: "Active", value: activeUsers },
+    { label: "Pending", value: pendingUsers },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="page-title">Users</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Manage lecturers and students, and send account setup links.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href="/admin/users?panel=import" className="btn-ghost text-sm">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-            </svg>
-            Import CSV
-          </Link>
-          <Link href="/admin/users?panel=new" className="btn-primary text-sm">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Add user
-          </Link>
-        </div>
+      <PageHeader
+        title="Users"
+        subtitle="Create, activate, and manage all users in the system."
+        actions={
+          <>
+            <Link href="/admin/users?panel=import" className="btn-ghost text-sm">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+              </svg>
+              Bulk upload
+            </Link>
+            <Link href="/admin/users?panel=new" className="btn-primary text-sm">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Add user
+            </Link>
+          </>
+        }
+      />
+
+      {/* Stats strip */}
+      <div className="grid grid-cols-3 gap-3">
+        {userStats.map((s) => (
+          <div key={s.label} className="rounded-lg bg-slate-50 p-3">
+            <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">{s.label}</div>
+            <div className="mt-1 text-xl font-medium tabular-nums text-slate-900">{s.value}</div>
+          </div>
+        ))}
       </div>
 
       {/* Status banners — dismiss by navigating back to the clean URL. */}
@@ -317,13 +335,13 @@ export default async function AdminUsersPage({
 
       {/* URL-driven slide-overs */}
       {panel === "new" && (
-        <SlideOver
+        <Dialog
           title="Add user"
           description="Create a lecturer or student account."
           closeHref="/admin/users"
         >
           <AddUserForm createUser={createUser} />
-        </SlideOver>
+        </Dialog>
       )}
       {panel === "import" && (
         <SlideOver
