@@ -51,7 +51,7 @@ export function Scanner() {
       if (res.ok) {
         setResult({ ok: true, ...data });
       } else {
-        setResult({ ok: false, error: data.error ?? "unknown_error" });
+        setResult({ ok: false, error: data.error ?? "unknown_error", closedAt: data.acceptingUntil });
       }
     } catch {
       setResult({ ok: false, error: "network_error" });

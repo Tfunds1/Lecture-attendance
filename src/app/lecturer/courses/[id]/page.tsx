@@ -17,7 +17,7 @@ import { generateShortCode } from "@/lib/short-code";
 // If a session is already active we resume it instead of opening a second
 // one — a course can only have one live session at a time (and the partial
 // unique index on shortCode assumes as much).
-async function startSession(courseId: string) {
+async function startSession(courseId: string, formData: FormData) {
   "use server";
   const session = await auth();
   if (!session?.user) throw new Error("unauthorized");
@@ -34,19 +34,34 @@ async function startSession(courseId: string) {
     select: { id: true },
   });
 
-  const target =
-    existing ??
-    (await db.session.create({
+  let targetId: string;
+  if (existing) {
+    // A session is already live — resume it; don't change its window.
+    targetId = existing.id;
+  } else {
+    // Attendance window: default 15, clamp to [1, 180]. Anything missing or
+    // non-numeric falls back to the default.
+    const raw = Number(formData.get("windowMinutes"));
+    const windowMinutes = Number.isFinite(raw) && raw >= 1 ? Math.min(180, Math.round(raw)) : 15;
+    const startedAt = new Date();
+    const acceptingUntil = new Date(startedAt.getTime() + windowMinutes * 60000);
+
+    const created = await db.session.create({
       data: {
         courseId,
         secret: generateSessionSecret(),
         shortCode: await generateShortCode(db),
+        startedAt,
+        windowMinutes,
+        acceptingUntil,
       },
       select: { id: true },
-    }));
+    });
+    targetId = created.id;
+  }
 
   revalidatePath(`/lecturer/courses/${courseId}`);
-  redirect(`/lecturer/sessions/${target.id}`); // throws — must stay outside try/catch
+  redirect(`/lecturer/sessions/${targetId}`); // throws — must stay outside try/catch
 }
 
 export default async function LecturerCoursePage({
@@ -119,8 +134,20 @@ export default async function LecturerCoursePage({
             Resume live session
           </Link>
         ) : (
-          <form action={startBound} className="relative mt-4 sm:mt-0 shrink-0">
-            <button type="submit" className="btn-primary w-full sm:w-auto">
+          <form action={startBound} className="mt-4 flex items-end gap-3 sm:mt-0 sm:shrink-0">
+            <div>
+              <label htmlFor="windowMinutes" className="label">Window (min)</label>
+              <input
+                id="windowMinutes"
+                name="windowMinutes"
+                type="number"
+                min={1}
+                max={180}
+                defaultValue={15}
+                className="input w-24"
+              />
+            </div>
+            <button type="submit" className="btn-primary">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3l14 9-14 9V3z" /></svg>
               Start session
             </button>

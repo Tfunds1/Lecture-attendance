@@ -51,6 +51,7 @@ export default async function LiveSessionPage({
         initiallyActive={ls.active}
         courseCode={ls.course.code}
         shortCode={ls.shortCode}
+        acceptingUntil={ls.acceptingUntil ? ls.acceptingUntil.toISOString() : null}
       />
     </div>
   );

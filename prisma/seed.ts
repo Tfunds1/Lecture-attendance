@@ -12,6 +12,7 @@
  * Reset + reseed with: npm run db:reset
  */
 
+import { randomBytes } from "crypto";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -102,6 +103,45 @@ async function main() {
 
   await prisma.enrollment.createMany({
     data: [...allEnroll, ...dbEnroll, ...aiEnroll],
+  });
+
+  // Two live sessions so both attendance-window states are visible in the demo:
+  // one still accepting, one whose window has already closed (but is still
+  // active, so the lecturer keeps the live roster). windowMinutes = 15 each.
+  const now = Date.now();
+
+  // CSC401 — started 5 min ago, window open until ~10 min from now.
+  const openSession = await prisma.session.create({
+    data: {
+      courseId: csc401.id,
+      secret: randomBytes(32).toString("hex"),
+      shortCode: "7K2P9M",
+      startedAt: new Date(now - 5 * 60_000),
+      windowMinutes: 15,
+      acceptingUntil: new Date(now - 5 * 60_000 + 15 * 60_000),
+      active: true,
+    },
+  });
+
+  // CSC403 — started 30 min ago, 15-min window closed ~15 min ago.
+  const closedSession = await prisma.session.create({
+    data: {
+      courseId: csc403.id,
+      secret: randomBytes(32).toString("hex"),
+      shortCode: "4R8T6W",
+      startedAt: new Date(now - 30 * 60_000),
+      windowMinutes: 15,
+      acceptingUntil: new Date(now - 30 * 60_000 + 15 * 60_000),
+      active: true,
+    },
+  });
+
+  // A few students who checked in under each session.
+  await prisma.attendance.createMany({
+    data: [
+      ...students.slice(0, 3).map((s) => ({ sessionId: openSession.id, studentId: s.id })),
+      ...students.slice(0, 2).map((s) => ({ sessionId: closedSession.id, studentId: s.id })),
+    ],
   });
 
   console.log("Seed complete.");

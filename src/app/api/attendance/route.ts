@@ -135,6 +135,17 @@ async function recordAttendance(
     return NextResponse.json({ error: "session_closed" }, { status: 409 });
   }
 
+  // Attendance window: the session can stay active indefinitely, but new
+  // submissions are only accepted until `acceptingUntil`. Past that, refuse
+  // with a distinct error and tell the client when the window closed so it can
+  // show a helpful message. (Sessions with a null acceptingUntil have no limit.)
+  if (lectureSession.acceptingUntil && Date.now() > lectureSession.acceptingUntil.getTime()) {
+    return NextResponse.json(
+      { error: "window_closed", acceptingUntil: lectureSession.acceptingUntil },
+      { status: 409 },
+    );
+  }
+
   const enrolled = await db.enrollment.findUnique({
     where: {
       studentId_courseId: {

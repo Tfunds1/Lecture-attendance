@@ -66,7 +66,7 @@ export function CodeEntry() {
       if (res.ok) {
         setResult({ ok: true, ...data });
       } else {
-        setResult({ ok: false, error: data.error ?? "unknown_error" });
+        setResult({ ok: false, error: data.error ?? "unknown_error", closedAt: data.acceptingUntil });
         // Let the student retype after a failure.
         lastSubmittedRef.current = null;
       }

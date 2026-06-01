@@ -32,11 +32,13 @@ export function LiveSession({
   initiallyActive,
   courseCode,
   shortCode,
+  acceptingUntil,
 }: {
   sessionId: string;
   initiallyActive: boolean;
   courseCode: string;
   shortCode: string | null;
+  acceptingUntil: string | null;
 }) {
   const [active, setActive] = useState(initiallyActive);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -142,17 +144,37 @@ export function LiveSession({
     URL.revokeObjectURL(url);
   }
 
+  // Attendance window state. Recomputed each render; since the attendance poll
+  // re-renders every few seconds, the badge flips within ~POLL_MS of the window
+  // closing without its own timer. A null acceptingUntil means no limit.
+  const acceptingUntilDate = acceptingUntil ? new Date(acceptingUntil) : null;
+  const windowOpen = acceptingUntilDate ? Date.now() <= acceptingUntilDate.getTime() : true;
+  const windowTime = acceptingUntilDate
+    ? acceptingUntilDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : "";
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* QR panel */}
       <div className="rounded-lg border border-slate-200 bg-white">
         <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5">
-          <h2 className="flex items-center gap-2 text-sm font-medium text-slate-900">
+          <h2 className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-900">
             Live QR
             <span className={`badge ${active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
               {active && <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
               {active ? "Active" : "Ended"}
             </span>
+            {acceptingUntilDate &&
+              (windowOpen ? (
+                <span className="badge bg-emerald-50 text-emerald-700">
+                  <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  Accepting until {windowTime}
+                </span>
+              ) : (
+                <span className="badge bg-slate-100 text-slate-500">
+                  Window closed at {windowTime}
+                </span>
+              ))}
           </h2>
           {active && (
             <button onClick={onEndSession} className="btn-danger text-sm" disabled={ending}>

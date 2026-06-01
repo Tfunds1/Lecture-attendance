@@ -6,13 +6,15 @@
 
 export type AttendanceResult =
   | { ok: true;  alreadyMarked: boolean; courseCode: string; courseTitle: string; markedAt?: string }
-  | { ok: false; error: string };
+  // closedAt is the ISO time the attendance window closed (window_closed only).
+  | { ok: false; error: string; closedAt?: string };
 
 export const ATTENDANCE_ERROR_LABELS: Record<string, string> = {
   invalid_or_expired_token:   "That code has expired. Ask your lecturer to refresh the QR.",
   invalid_or_inactive_code:   "That code isn't valid. Double-check the characters, or ask your lecturer.",
   session_not_found:          "Session not found.",
   session_closed:             "The lecturer has ended this session.",
+  window_closed:              "The attendance window for this session has closed.",
   not_enrolled_in_course:     "You are not enrolled in this course.",
   malformed_token:            "That doesn't look like a valid attendance QR.",
   only_students_can_mark:     "Only students can mark attendance.",
@@ -37,6 +39,15 @@ export function AttendanceResultCard({ result }: { result: AttendanceResult }) {
             {result.markedAt && (
               <> <span className="text-emerald-600">at {new Date(result.markedAt).toLocaleTimeString()}</span></>
             )}
+          </div>
+        </>
+      ) : result.error === "window_closed" ? (
+        <>
+          <div className="font-semibold text-rose-800">Attendance window closed.</div>
+          <div className="text-sm text-rose-700 mt-1">
+            {result.closedAt
+              ? `The lecturer accepted attendance until ${new Date(result.closedAt).toLocaleTimeString()}. You arrived too late.`
+              : "The attendance window for this session has closed. You arrived too late."}
           </div>
         </>
       ) : (
