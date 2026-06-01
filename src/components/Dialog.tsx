@@ -18,7 +18,7 @@ export function Dialog({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6">
+    <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto p-4 sm:p-6">
       {/* Backdrop — clicking it closes the dialog. */}
       <Link
         href={closeHref}

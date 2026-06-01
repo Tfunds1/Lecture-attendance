@@ -87,9 +87,11 @@ export function AdminShell({
         </div>
       )}
 
-      {/* Content */}
+      {/* Content. No entrance animation here: an opacity animation forms a
+          stacking context that would trap the URL-driven Sheet/Dialog overlays
+          (rendered inside children) beneath the mobile nav bar. */}
       <main className="md:ml-[200px]">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 animate-fade-in">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
           {children}
         </div>
       </main>

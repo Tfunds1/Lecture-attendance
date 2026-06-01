@@ -22,7 +22,7 @@ export function SlideOver({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-[60]">
       {/* Backdrop — clicking it closes the panel. */}
       <Link
         href={closeHref}
