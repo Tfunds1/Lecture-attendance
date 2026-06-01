@@ -118,7 +118,7 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" subtitle={`System overview · ${today}`} />
+      <PageHeader title="Dashboard" subtitle={`System overview · ${today}`} status />
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">

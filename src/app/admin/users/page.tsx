@@ -279,6 +279,7 @@ export default async function AdminUsersPage({
       <PageHeader
         title="Users"
         subtitle="Create, activate, and manage all users in the system."
+        status
         actions={
           <>
             <Link href="/admin/users?panel=import" className="btn-ghost text-sm">

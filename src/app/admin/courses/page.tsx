@@ -113,6 +113,7 @@ export default async function AdminCoursesPage({
       <PageHeader
         title="Courses"
         subtitle="Manage courses, assign lecturers, and group by semester."
+        status
         actions={
           <>
             <Link href="/admin/courses?panel=import" className="btn-ghost text-sm">

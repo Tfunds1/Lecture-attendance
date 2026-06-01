@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { PageHeader } from "@/components/admin/PageHeader";
 
 export default async function LecturerHome() {
   const session = await auth();
@@ -60,10 +61,10 @@ export default async function LecturerHome() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="page-title">My Courses</h1>
-        <p className="text-sm text-slate-500 mt-1">Open a course to start a session and track attendance.</p>
-      </div>
+      <PageHeader
+        title="My Courses"
+        subtitle="Open a course to start a session and track attendance."
+      />
 
       {courses.length === 0 ? (
         <div className="card p-10 text-center">

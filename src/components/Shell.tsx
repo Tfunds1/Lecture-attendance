@@ -1,12 +1,9 @@
 "use client";
 
-// Admin-only chrome: a fixed left sidebar on desktop that collapses to a
-// hamburger-triggered drawer below the md breakpoint. Used solely by the admin
-// layout — the lecturer/student shells still use AppShell, so this is additive
-// and leaves them untouched.
-//
-// The sign-out server action is passed in from the (server) layout and rendered
-// inside a plain <form>, so no auth logic lives here.
+// The single application shell for every authenticated role (admin, lecturer,
+// student). A fixed left sidebar on desktop that collapses to a hamburger
+// drawer below the md breakpoint. Each layout passes its own nav items and a
+// sign-out server action, so all three roles share one cohesive chrome.
 
 import { useState } from "react";
 import Link from "next/link";
@@ -14,16 +11,13 @@ import { usePathname } from "next/navigation";
 import type { Role } from "@/lib/roles";
 
 const ROLE_LABEL: Record<Role, string> = {
-  ADMIN: "Admin",
+  ADMIN: "Administrator",
   LECTURER: "Lecturer",
   STUDENT: "Student",
 };
 
-const NAV = [
-  { href: "/admin", label: "Dashboard", icon: DashboardIcon },
-  { href: "/admin/users", label: "Users", icon: UsersIcon },
-  { href: "/admin/courses", label: "Courses", icon: CoursesIcon },
-];
+export type IconName = "dashboard" | "users" | "courses" | "scan" | "code";
+export type NavItem = { href: string; label: string; icon: IconName };
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -32,14 +26,16 @@ function initials(name: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function AdminShell({
+export function Shell({
   name,
   role,
+  nav,
   signOut,
   children,
 }: {
   name: string;
   role: Role;
+  nav: NavItem[];
   signOut: () => Promise<void>;
   children: React.ReactNode;
 }) {
@@ -48,8 +44,8 @@ export function AdminShell({
   return (
     <div className="min-h-screen bg-white">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[200px] flex-col border-r border-slate-200 bg-slate-50 md:flex">
-        <SidebarContent name={name} role={role} signOut={signOut} />
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] flex-col border-r border-slate-200 bg-slate-50 md:flex">
+        <SidebarContent name={name} role={role} nav={nav} signOut={signOut} />
       </aside>
 
       {/* Mobile top bar */}
@@ -69,17 +65,18 @@ export function AdminShell({
 
       {/* Mobile drawer */}
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-[60] md:hidden">
           <button
             type="button"
             aria-label="Close navigation"
             onClick={() => setDrawerOpen(false)}
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
           />
-          <aside className="absolute inset-y-0 left-0 flex w-[240px] flex-col border-r border-slate-200 bg-slate-50 animate-slide-in-right">
+          <aside className="absolute inset-y-0 left-0 flex w-[260px] flex-col border-r border-slate-200 bg-slate-50 animate-slide-in-right">
             <SidebarContent
               name={name}
               role={role}
+              nav={nav}
               signOut={signOut}
               onNavigate={() => setDrawerOpen(false)}
             />
@@ -87,13 +84,9 @@ export function AdminShell({
         </div>
       )}
 
-      {/* Content. No entrance animation here: an opacity animation forms a
-          stacking context that would trap the URL-driven Sheet/Dialog overlays
-          (rendered inside children) beneath the mobile nav bar. */}
-      <main className="md:ml-[200px]">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-          {children}
-        </div>
+      {/* Content */}
+      <main className="md:ml-[220px]">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
       </main>
     </div>
   );
@@ -102,11 +95,13 @@ export function AdminShell({
 function SidebarContent({
   name,
   role,
+  nav,
   signOut,
   onNavigate,
 }: {
   name: string;
   role: Role;
+  nav: NavItem[];
   signOut: () => Promise<void>;
   onNavigate?: () => void;
 }) {
@@ -119,12 +114,13 @@ function SidebarContent({
       </div>
 
       <nav className="flex-1 space-y-1 px-3">
-        {NAV.map((item) => {
-          const active =
-            item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname === item.href || pathname.startsWith(item.href + "/");
-          const Icon = item.icon;
+        {nav.map((item) => {
+          // A one-segment href (/admin, /lecturer, /student) is a role home and
+          // matches exactly; deeper items also light up on their detail pages.
+          const isHome = item.href.split("/").filter(Boolean).length <= 1;
+          const active = isHome
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
@@ -138,7 +134,7 @@ function SidebarContent({
                   : "border border-transparent font-normal text-slate-500 hover:bg-white/70 hover:text-slate-800",
               ].join(" ")}
             >
-              <Icon className="h-[18px] w-[18px] shrink-0" />
+              <NavIcon name={item.icon} className="h-[18px] w-[18px] shrink-0" />
               {item.label}
             </Link>
           );
@@ -159,7 +155,7 @@ function SidebarContent({
             <button
               type="submit"
               aria-label="Sign out"
-              className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-white hover:text-slate-700"
+              className="grid h-9 w-9 place-items-center rounded-md text-slate-400 transition-colors hover:bg-white hover:text-slate-700"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
@@ -174,7 +170,7 @@ function SidebarContent({
 
 function Brand() {
   return (
-    <Link href="/admin" className="flex items-center gap-2.5">
+    <Link href="/" className="flex items-center gap-2.5">
       <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-slate-900 text-white">
         <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -190,32 +186,53 @@ function Brand() {
 
 // --- Inline nav icons (lucide-style strokes, no dependency) ---------------
 
-function DashboardIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="9" rx="1" />
-      <rect x="14" y="3" width="7" height="5" rx="1" />
-      <rect x="14" y="12" width="7" height="9" rx="1" />
-      <rect x="3" y="16" width="7" height="5" rx="1" />
-    </svg>
-  );
-}
-
-function UsersIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function CoursesIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-    </svg>
-  );
+function NavIcon({ name, className }: { name: IconName; className?: string }) {
+  const common = {
+    viewBox: "0 0 24 24",
+    className,
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  switch (name) {
+    case "dashboard":
+      return (
+        <svg {...common}>
+          <rect x="3" y="3" width="7" height="9" rx="1" />
+          <rect x="14" y="3" width="7" height="5" rx="1" />
+          <rect x="14" y="12" width="7" height="9" rx="1" />
+          <rect x="3" y="16" width="7" height="5" rx="1" />
+        </svg>
+      );
+    case "users":
+      return (
+        <svg {...common}>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      );
+    case "courses":
+      return (
+        <svg {...common}>
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </svg>
+      );
+    case "scan":
+      return (
+        <svg {...common}>
+          <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
+          <rect x="7" y="7" width="10" height="10" rx="1" />
+        </svg>
+      );
+    case "code":
+      return (
+        <svg {...common}>
+          <path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18" />
+        </svg>
+      );
+  }
 }

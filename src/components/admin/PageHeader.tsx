@@ -8,10 +8,13 @@ export function PageHeader({
   title,
   subtitle,
   actions,
+  status = false,
 }: {
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;
+  // Show the "System operational" pill (admin pages only).
+  status?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -21,12 +24,16 @@ export function PageHeader({
       </div>
       {/* Wraps on small screens so buttons don't pile up; the decorative pill
           is hidden on mobile to keep the action row uncluttered. */}
-      <div className="flex flex-wrap items-center gap-2">
-        {actions}
-        <span className="hidden sm:inline-flex">
-          <StatusPill />
-        </span>
-      </div>
+      {(actions || status) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {actions}
+          {status && (
+            <span className="hidden sm:inline-flex">
+              <StatusPill />
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

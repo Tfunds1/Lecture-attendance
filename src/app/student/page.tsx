@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { PageHeader } from "@/components/admin/PageHeader";
 
 export default async function StudentHome() {
   const session = await auth();
@@ -79,26 +80,26 @@ export default async function StudentHome() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
-        <div>
-          <h1 className="page-title">My Courses</h1>
-          <p className="text-sm text-slate-500 mt-1">Mark your attendance and track your record.</p>
-        </div>
-        {/*
-          Two entry paths, equally prominent. Order matters on mobile: Scan
-          QR is the first option for students who can see the screen; Enter
-          code is the fallback for the (common) case where they can't.
-        */}
-        <div className="flex gap-2 sm:gap-3">
-          <Link href="/student/scan" className="btn-primary flex-1 sm:flex-none text-center">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3M20 20v.01M17 20v.01M20 17v.01" /></svg>
-            Scan QR
-          </Link>
-          <Link href="/student/code" className="btn-ghost flex-1 sm:flex-none text-center">
-            Enter code
-          </Link>
-        </div>
-      </div>
+      {/*
+        Two entry paths, equally prominent. Scan QR is the primary action for
+        students who can see the screen; Enter code is the fallback for the
+        (common) case where they can't.
+      */}
+      <PageHeader
+        title="My Courses"
+        subtitle="Mark your attendance and track your record."
+        actions={
+          <>
+            <Link href="/student/scan" className="btn-primary text-sm">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3M20 20v.01M17 20v.01M20 17v.01" /></svg>
+              Scan QR
+            </Link>
+            <Link href="/student/code" className="btn-ghost text-sm">
+              Enter code
+            </Link>
+          </>
+        }
+      />
 
       {enrollments.length === 0 ? (
         <div className="card p-10 text-center">
