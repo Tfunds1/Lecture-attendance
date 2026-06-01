@@ -119,24 +119,40 @@ export function Scanner() {
 
   return (
     <div className="space-y-4">
-      <div ref={containerRef} className="w-full aspect-square bg-black rounded overflow-hidden" />
-
-      <div className="flex gap-2">
-        {!scanning ? (
-          <button onClick={startCamera} className="btn-primary flex-1">
-            Start camera
-          </button>
-        ) : (
-          <button onClick={stopCamera} className="btn-ghost flex-1">
-            Stop camera
-          </button>
+      <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-900 ring-1 ring-slate-200">
+        <div
+          ref={containerRef}
+          className="absolute inset-0 [&_video]:h-full [&_video]:w-full [&_video]:object-cover"
+        />
+        {!scanning && (
+          <div className="absolute inset-0 grid place-items-center px-6 text-center text-slate-400">
+            <div>
+              <svg viewBox="0 0 24 24" className="mx-auto h-10 w-10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
+                <rect x="8" y="8" width="8" height="8" rx="1" />
+              </svg>
+              <p className="mt-2 text-sm">Tap “Start camera” to scan the QR.</p>
+            </div>
+          </div>
         )}
       </div>
 
+      {!scanning ? (
+        <button onClick={startCamera} className="btn-primary w-full">
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+          Start camera
+        </button>
+      ) : (
+        <button onClick={stopCamera} className="btn-ghost w-full">
+          Stop camera
+        </button>
+      )}
+
       {result && <AttendanceResultCard result={result} />}
 
-      <p className="text-xs text-slate-500 text-center">
-        Camera access requires HTTPS. On a phone, use <code>npm run dev:https</code> on the laptop.
+      <p className="text-center text-xs text-slate-500">
+        Your browser will ask for camera permission. If it doesn&apos;t open,
+        allow camera access for this site in your browser settings.
       </p>
     </div>
   );

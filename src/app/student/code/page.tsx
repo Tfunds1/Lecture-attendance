@@ -5,14 +5,16 @@ import { CodeEntry } from "./CodeEntry";
 
 export default function CodeEntryPage() {
   return (
-    <div className="space-y-4 max-w-md mx-auto">
+    <div className="mx-auto max-w-md space-y-5">
       <div>
         <h1 className="page-title">Enter attendance code</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="mt-1 text-[13px] text-slate-500">
           Your lecturer will announce or display a six-character code.
         </p>
       </div>
-      <CodeEntry />
+      <div className="card p-5">
+        <CodeEntry />
+      </div>
     </div>
   );
 }

@@ -6,14 +6,16 @@ import { Scanner } from "./Scanner";
 
 export default function ScanPage() {
   return (
-    <div className="space-y-4 max-w-md mx-auto">
+    <div className="mx-auto max-w-md space-y-5">
       <div>
         <h1 className="page-title">Scan attendance QR</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="mt-1 text-[13px] text-slate-500">
           Point your phone camera at the QR code your lecturer is showing.
         </p>
       </div>
-      <Scanner />
+      <div className="card p-5">
+        <Scanner />
+      </div>
     </div>
   );
 }
