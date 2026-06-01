@@ -23,7 +23,7 @@ body {
 
 /* Tiny utility set so pages don't need to repeat the same Tailwind chains. */
 @layer components {
-  .btn        { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500 disabled:opacity-60 disabled:pointer-events-none; }
+  .btn        { @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500 disabled:opacity-60 disabled:pointer-events-none; }
   .btn-primary{ @apply btn bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:shadow active:translate-y-px; }
   .btn-ghost  { @apply btn bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-slate-300 active:translate-y-px; }
   .btn-danger { @apply btn bg-red-600 text-white shadow-sm hover:bg-red-700 active:translate-y-px; }

@@ -59,7 +59,7 @@ export function AdminShell({
           type="button"
           onClick={() => setDrawerOpen(true)}
           aria-label="Open navigation"
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+          className="-mr-2.5 grid h-11 w-11 place-items-center rounded-lg text-slate-600 hover:bg-slate-100"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 12h18M3 6h18M3 18h18" />

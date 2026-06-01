@@ -19,9 +19,13 @@ export function PageHeader({
         <h1 className="text-xl font-medium tracking-tight text-slate-900">{title}</h1>
         {subtitle && <p className="mt-1 text-[13px] text-slate-500">{subtitle}</p>}
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+      {/* Wraps on small screens so buttons don't pile up; the decorative pill
+          is hidden on mobile to keep the action row uncluttered. */}
+      <div className="flex flex-wrap items-center gap-2">
         {actions}
-        <StatusPill />
+        <span className="hidden sm:inline-flex">
+          <StatusPill />
+        </span>
       </div>
     </div>
   );
