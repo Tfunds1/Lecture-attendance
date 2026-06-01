@@ -99,9 +99,8 @@ export default async function LecturerCoursePage({
       </div>
 
       {/* Start / resume session — the primary action on this page. */}
-      <div className="card relative overflow-hidden p-6 sm:flex sm:items-center sm:justify-between sm:gap-6">
-        <span className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-gradient-to-br from-brand-500 to-violet-600 opacity-10 blur-2xl" />
-        <div className="relative">
+      <div className="card p-6 sm:flex sm:items-center sm:justify-between sm:gap-6">
+        <div>
           <h2 className="font-semibold text-slate-900">
             {liveSession ? "A session is live right now" : "Take attendance"}
           </h2>
@@ -114,12 +113,9 @@ export default async function LecturerCoursePage({
         {liveSession ? (
           <Link
             href={`/lecturer/sessions/${liveSession.id}`}
-            className="btn-primary relative mt-4 sm:mt-0 shrink-0"
+            className="btn-primary mt-4 sm:mt-0 shrink-0"
           >
-            <span className="relative flex h-2 w-2 mr-1">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
-            </span>
+            <span className="h-1.5 w-1.5 rounded-full bg-white" />
             Resume live session
           </Link>
         ) : (
@@ -144,7 +140,7 @@ export default async function LecturerCoursePage({
             <ul className="divide-y divide-slate-100 max-h-[420px] overflow-y-auto -mx-2">
               {course.enrollments.map((e) => (
                 <li key={e.studentId} className="py-2.5 px-2 flex items-center gap-3 text-sm">
-                  <span className="grid place-items-center h-8 w-8 shrink-0 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold ring-1 ring-emerald-100">
+                  <span className="grid place-items-center h-8 w-8 shrink-0 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold ring-1 ring-slate-200">
                     {e.student.name.trim().slice(0, 1).toUpperCase()}
                   </span>
                   <span className="min-w-0">
@@ -161,10 +157,7 @@ export default async function LecturerCoursePage({
         <div className="card p-6">
           <h2 className="font-semibold text-slate-900 mb-4">Session history</h2>
           {course.sessions.length === 0 ? (
-            <div className="text-center py-10">
-              <svg viewBox="0 0 24 24" className="h-10 w-10 mx-auto text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" /></svg>
-              <p className="text-sm text-slate-500 mt-2">No sessions yet. Start one above.</p>
-            </div>
+            <p className="py-10 text-center text-sm text-slate-400">No sessions yet. Start one above.</p>
           ) : (
             <ul className="divide-y divide-slate-100">
               {course.sessions.map((s) => (
@@ -174,20 +167,15 @@ export default async function LecturerCoursePage({
                     className="flex items-center justify-between gap-3 text-sm group"
                   >
                     <span className="min-w-0">
-                      <span className="block font-medium text-slate-900 group-hover:text-brand-700 transition-colors">
+                      <span className="block font-medium text-slate-900">
                         {s.startedAt.toLocaleDateString()} · {s.startedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </span>
-                      <span className="block text-xs text-slate-500">
+                      <span className="block text-xs text-slate-500 tabular-nums">
                         {s._count.attendances} present
                       </span>
                     </span>
-                    <span className={`badge shrink-0 ${s.active ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>
-                      {s.active && (
-                        <span className="relative flex h-2 w-2 mr-1.5">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                          <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
-                        </span>
-                      )}
+                    <span className={`badge shrink-0 ${s.active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                      {s.active && <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
                       {s.active ? "Live" : "Ended"}
                     </span>
                   </Link>

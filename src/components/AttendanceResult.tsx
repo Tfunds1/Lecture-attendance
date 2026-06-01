@@ -25,24 +25,24 @@ export function AttendanceResultCard({ result }: { result: AttendanceResult }) {
   return (
     <div
       role={result.ok ? "status" : "alert"}
-      className={`card p-4 ${result.ok ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
+      className={`card p-4 ${result.ok ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"}`}
     >
       {result.ok ? (
         <>
-          <div className="font-semibold text-green-800">
+          <div className="font-semibold text-emerald-800">
             {result.alreadyMarked ? "Already marked present" : "Marked present"}
           </div>
-          <div className="text-sm text-green-700 mt-1">
+          <div className="text-sm text-emerald-700 mt-1">
             {result.courseCode} — {result.courseTitle}
             {result.markedAt && (
-              <> <span className="text-green-600">at {new Date(result.markedAt).toLocaleTimeString()}</span></>
+              <> <span className="text-emerald-600">at {new Date(result.markedAt).toLocaleTimeString()}</span></>
             )}
           </div>
         </>
       ) : (
         <>
-          <div className="font-semibold text-red-800">Couldn&apos;t mark attendance</div>
-          <div className="text-sm text-red-700 mt-1">
+          <div className="font-semibold text-rose-800">Couldn&apos;t mark attendance</div>
+          <div className="text-sm text-rose-700 mt-1">
             {ATTENDANCE_ERROR_LABELS[result.error] ?? result.error}
           </div>
         </>

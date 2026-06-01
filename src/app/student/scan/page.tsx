@@ -8,7 +8,7 @@ export default function ScanPage() {
   return (
     <div className="space-y-4 max-w-md mx-auto">
       <div>
-        <h1 className="text-2xl font-bold">Scan attendance QR</h1>
+        <h1 className="page-title">Scan attendance QR</h1>
         <p className="text-sm text-slate-500 mt-1">
           Point your phone camera at the QR code your lecturer is showing.
         </p>

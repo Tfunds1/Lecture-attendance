@@ -46,25 +46,25 @@ export default async function StudentHome() {
     const total = course._count.sessions;
     const mine = courseToMyAttendance.get(course.id) ?? 0;
     const pct = total === 0 ? 0 : Math.round((mine / total) * 100);
-    const tone = pct >= 75 ? "green" : pct >= 50 ? "amber" : "red";
-    const text = { green: "text-green-600", amber: "text-amber-600", red: "text-red-600" }[tone];
-    const bar = { green: "bg-green-500", amber: "bg-amber-500", red: "bg-red-500" }[tone];
+    // Neutral by default; colour appears only to flag attendance that's
+    // slipping — a signal, not decoration.
+    const pctText = pct >= 75 ? "text-slate-900" : pct >= 50 ? "text-amber-600" : "text-rose-600";
     return (
       <Link
         key={course.id}
         href={`/student/courses/${course.id}`}
         className="card card-hover p-5 group"
       >
-        <div className="font-mono text-xs font-semibold text-brand-700">{course.code}</div>
-        <div className="font-semibold text-slate-900 mt-1 group-hover:text-brand-700 transition-colors">{course.title}</div>
-        <div className="text-xs text-slate-500 mt-1">Lecturer: {course.lecturer.name}</div>
+        <div className="font-mono text-xs font-medium text-slate-500">{course.code}</div>
+        <div className="font-semibold text-slate-900 mt-1">{course.title}</div>
+        <div className="text-xs text-slate-500 mt-1">{course.lecturer.name}</div>
         <div className="mt-4">
           <div className="flex justify-between items-baseline text-sm">
-            <span className="text-slate-500">{mine} / {total} sessions</span>
-            <span className={`font-semibold tabular-nums ${text}`}>{pct}%</span>
+            <span className="text-slate-500 tabular-nums">{mine} / {total} sessions</span>
+            <span className={`font-semibold tabular-nums ${pctText}`}>{pct}%</span>
           </div>
-          <div className="mt-1.5 h-2 bg-slate-100 rounded-full overflow-hidden">
-            <div className={`h-full rounded-full transition-all ${bar}`} style={{ width: `${pct}%` }} />
+          <div className="mt-1.5 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-full rounded-full bg-slate-800 transition-all" style={{ width: `${pct}%` }} />
           </div>
         </div>
       </Link>

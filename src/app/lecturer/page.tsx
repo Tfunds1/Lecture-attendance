@@ -33,28 +33,20 @@ export default async function LecturerHome() {
       >
         <div className="flex justify-between items-start">
           <div>
-            <div className="font-mono text-xs font-semibold text-brand-700">{c.code}</div>
-            <div className="font-semibold text-slate-900 mt-1 group-hover:text-brand-700 transition-colors">{c.title}</div>
+            <div className="font-mono text-xs font-medium text-slate-500">{c.code}</div>
+            <div className="font-semibold text-slate-900 mt-1">{c.title}</div>
           </div>
           {live && (
-            <span className="badge bg-green-100 text-green-700">
-              <span className="relative flex h-2 w-2 mr-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
-              </span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               Live
             </span>
           )}
         </div>
-        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-4 text-xs text-slate-500">
-          <span className="inline-flex items-center gap-1.5">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /></svg>
-            {c._count.enrollments} students
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" /></svg>
-            {c._count.sessions} sessions held
-          </span>
+        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-500 tabular-nums">
+          <span>{c._count.enrollments} students</span>
+          <span className="text-slate-300">·</span>
+          <span>{c._count.sessions} sessions held</span>
         </div>
       </Link>
     );

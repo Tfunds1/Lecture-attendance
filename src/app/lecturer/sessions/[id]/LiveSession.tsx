@@ -150,14 +150,9 @@ export function LiveSession({
           <h2 className="font-semibold flex items-center gap-2">
             Live QR
             <span
-              className={`badge ${active ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-600"}`}
+              className={`badge ${active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
             >
-              {active && (
-                <span className="relative flex h-2 w-2 mr-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
-                </span>
-              )}
+              {active && <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />}
               {active ? "Active" : "Ended"}
             </span>
           </h2>
@@ -182,8 +177,7 @@ export function LiveSession({
             <div className="w-[360px] h-[360px] bg-slate-100 rounded-2xl animate-pulse" />
           )
         ) : (
-          <div className="w-[360px] h-[360px] bg-slate-50 border border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-slate-500 text-center px-6 gap-3">
-            <svg viewBox="0 0 24 24" className="h-10 w-10 text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /></svg>
+          <div className="w-[360px] h-[360px] bg-slate-50 border border-dashed border-slate-300 rounded-2xl flex items-center justify-center text-slate-400 text-sm text-center px-8">
             This session has ended. Students can no longer mark attendance.
           </div>
         )}
@@ -219,7 +213,7 @@ export function LiveSession({
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-semibold flex items-center gap-2">
             Present
-            <span className="badge bg-brand-50 text-brand-700 tabular-nums">{attendees.length}</span>
+            <span className="badge bg-slate-100 text-slate-600 tabular-nums">{attendees.length}</span>
           </h2>
           <button
             onClick={exportCsv}
@@ -232,16 +226,13 @@ export function LiveSession({
         </div>
 
         {attendees.length === 0 ? (
-          <div className="text-center py-10">
-            <svg viewBox="0 0 24 24" className="h-10 w-10 mx-auto text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /></svg>
-            <p className="text-sm text-slate-500 mt-2">No one has marked attendance yet.</p>
-          </div>
+          <p className="py-10 text-center text-sm text-slate-400">No one has marked attendance yet.</p>
         ) : (
           <ul className="divide-y divide-slate-100 max-h-[420px] overflow-y-auto -mx-2">
             {attendees.map((a) => (
               <li key={a.id} className="py-2.5 px-2 flex items-center justify-between gap-3 text-sm rounded-lg hover:bg-slate-50 transition-colors">
                 <span className="flex items-center gap-3 min-w-0">
-                  <span className="grid place-items-center h-8 w-8 shrink-0 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold ring-1 ring-emerald-100">
+                  <span className="grid place-items-center h-8 w-8 shrink-0 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold ring-1 ring-slate-200">
                     {a.name.trim().slice(0, 1).toUpperCase()}
                   </span>
                   <span className="min-w-0">
