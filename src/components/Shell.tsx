@@ -44,20 +44,28 @@ export function Shell({
   return (
     <div className="min-h-screen bg-white">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] flex-col border-r border-slate-200 bg-slate-50 md:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] flex-col border-r border-slate-200 bg-[#00044B] md:flex">
         <SidebarContent name={name} role={role} nav={nav} signOut={signOut} />
       </aside>
 
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 md:hidden">
+      <div className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-[#00044B] px-4 md:hidden">
         <Brand />
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
           aria-label="Open navigation"
-          className="-mr-2.5 grid h-11 w-11 place-items-center rounded-lg text-slate-600 hover:bg-slate-100"
+          className="-mr-2.5 grid h-11 w-11 place-items-center rounded-lg text-white hover:bg-slate-900"
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M3 12h18M3 6h18M3 18h18" />
           </svg>
         </button>
@@ -86,7 +94,9 @@ export function Shell({
 
       {/* Content */}
       <main className="md:ml-[220px]">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          {children}
+        </div>
       </main>
     </div>
   );
@@ -134,7 +144,10 @@ function SidebarContent({
                   : "border border-transparent font-normal text-slate-500 hover:bg-white/70 hover:text-slate-800",
               ].join(" ")}
             >
-              <NavIcon name={item.icon} className="h-[18px] w-[18px] shrink-0" />
+              <NavIcon
+                name={item.icon}
+                className="h-[18px] w-[18px] shrink-0"
+              />
               {item.label}
             </Link>
           );
@@ -148,16 +161,28 @@ function SidebarContent({
             {initials(name)}
           </span>
           <span className="min-w-0 flex-1 leading-tight">
-            <span className="block truncate text-[13px] font-medium text-slate-900">{name}</span>
-            <span className="block text-xs text-slate-500">{ROLE_LABEL[role]}</span>
+            <span className="block truncate text-[13px] font-medium text-white">
+              {name}
+            </span>
+            <span className="block text-xs text-slate-500">
+              {ROLE_LABEL[role]}
+            </span>
           </span>
           <form action={signOut}>
             <button
               type="submit"
               aria-label="Sign out"
-              className="grid h-9 w-9 place-items-center rounded-md text-slate-400 transition-colors hover:bg-white hover:text-slate-700"
+              className="grid h-9 w-9 place-items-center rounded-md text-slate-400 transition-colors hover:bg-white hover:text-slate-700 "
             >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
               </svg>
             </button>
@@ -172,14 +197,22 @@ function Brand() {
   return (
     <Link href="/" className="flex items-center gap-2.5">
       <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-slate-900 text-white">
-        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          viewBox="0 0 24 24"
+          className="h-[18px] w-[18px]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <rect x="3" y="3" width="7" height="7" rx="1" />
           <rect x="14" y="3" width="7" height="7" rx="1" />
           <rect x="3" y="14" width="7" height="7" rx="1" />
           <path d="M14 14h3v3M20 20v.01M17 20v.01M20 17v.01" />
         </svg>
       </span>
-      <span className="font-medium tracking-tight text-slate-900">Attendance</span>
+      <span className="font-medium tracking-tight text-white">Attendance</span>
     </Link>
   );
 }
