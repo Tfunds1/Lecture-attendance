@@ -80,7 +80,7 @@ export function Shell({
             onClick={() => setDrawerOpen(false)}
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
           />
-          <aside className="absolute inset-y-0 left-0 flex w-[260px] flex-col border-r border-slate-200 bg-slate-50 animate-slide-in-right">
+          <aside className="absolute inset-y-0 left-0 flex w-[260px] flex-col border-r border-white/10 bg-[#00044B] animate-slide-in-right">
             <SidebarContent
               name={name}
               role={role}
