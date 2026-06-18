@@ -158,11 +158,26 @@ export default async function LecturerCoursePage({
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Enrolled students */}
         <div className="card p-6">
-          <h2 className="font-semibold text-slate-900 mb-4">
-            Enrolled students <span className="text-slate-400 font-normal">({course.enrollments.length})</span>
-          </h2>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="font-semibold text-slate-900">
+              Enrolled students <span className="text-slate-400 font-normal">({course.enrollments.length})</span>
+            </h2>
+            <Link
+              href={`/lecturer/courses/${course.id}/students`}
+              className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-700"
+            >
+              Manage
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+            </Link>
+          </div>
           {course.enrollments.length === 0 ? (
-            <p className="text-sm text-slate-500">No students enrolled yet. An admin assigns students to this course.</p>
+            <p className="text-sm text-slate-500">
+              No students enrolled yet.{" "}
+              <Link href={`/lecturer/courses/${course.id}/students`} className="font-medium text-brand-600 hover:text-brand-700">
+                Add students
+              </Link>{" "}
+              to start tracking attendance.
+            </p>
           ) : (
             <ul className="divide-y divide-slate-100 max-h-[420px] overflow-y-auto -mx-2">
               {course.enrollments.map((e) => (
