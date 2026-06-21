@@ -52,6 +52,7 @@ export default async function LiveSessionPage({
         courseCode={ls.course.code}
         shortCode={ls.shortCode}
         acceptingUntil={ls.acceptingUntil ? ls.acceptingUntil.toISOString() : null}
+        windowSeconds={ls.windowSeconds}
       />
     </div>
   );

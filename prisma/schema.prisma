@@ -105,11 +105,13 @@ model Session {
   // explicit makes admin/lecturer dashboards trivial to query.
   active     Boolean  @default(true)
   // Attendance window: submissions are only accepted within the first
-  // `windowMinutes` of the session. `acceptingUntil` is startedAt +
-  // windowMinutes, computed and stored at creation so the attendance API
+  // `windowSeconds` of the session. `acceptingUntil` is startedAt +
+  // windowSeconds, computed and stored at creation so the attendance API
   // doesn't recompute it on every check. The session can stay active past
   // this time (live roster keeps updating); only NEW submissions are refused.
-  windowMinutes  Int       @default(15)
+  // Stored in seconds (default 900 = 15 min) so a lecturer can run either a
+  // short seconds-scale snapshot window or a longer minutes-scale one.
+  windowSeconds  Int       @default(900)
   acceptingUntil DateTime?
 
   attendances Attendance[]

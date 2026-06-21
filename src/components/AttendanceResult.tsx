@@ -7,7 +7,9 @@
 export type AttendanceResult =
   | { ok: true;  alreadyMarked: boolean; courseCode: string; courseTitle: string; markedAt?: string }
   // closedAt is the ISO time the attendance window closed (window_closed only).
-  | { ok: false; error: string; closedAt?: string };
+  // windowSeconds is the original window length — used to decide whether the
+  // closed-at time needs second-level precision (short windows do).
+  | { ok: false; error: string; closedAt?: string; windowSeconds?: number };
 
 export const ATTENDANCE_ERROR_LABELS: Record<string, string> = {
   invalid_or_expired_token:   "That code has expired. Ask your lecturer to refresh the QR.",
@@ -46,7 +48,12 @@ export function AttendanceResultCard({ result }: { result: AttendanceResult }) {
           <div className="font-semibold text-rose-800">Attendance window closed.</div>
           <div className="text-sm text-rose-700 mt-1">
             {result.closedAt
-              ? `The lecturer accepted attendance until ${new Date(result.closedAt).toLocaleTimeString()}. You arrived too late.`
+              ? `The lecturer accepted attendance until ${new Date(result.closedAt).toLocaleTimeString(
+                  [],
+                  result.windowSeconds != null && result.windowSeconds < 300
+                    ? { hour: "2-digit", minute: "2-digit", second: "2-digit" }
+                    : { hour: "2-digit", minute: "2-digit" },
+                )}. You arrived too late.`
               : "The attendance window for this session has closed. You arrived too late."}
           </div>
         </>

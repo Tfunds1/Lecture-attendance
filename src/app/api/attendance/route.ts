@@ -141,7 +141,13 @@ async function recordAttendance(
   // show a helpful message. (Sessions with a null acceptingUntil have no limit.)
   if (lectureSession.acceptingUntil && Date.now() > lectureSession.acceptingUntil.getTime()) {
     return NextResponse.json(
-      { error: "window_closed", acceptingUntil: lectureSession.acceptingUntil },
+      {
+        error: "window_closed",
+        acceptingUntil: lectureSession.acceptingUntil,
+        // Lets the client decide whether to show seconds in the closed-at time
+        // (short windows need HH:MM:SS precision; long ones don't).
+        windowSeconds: lectureSession.windowSeconds,
+      },
       { status: 409 },
     );
   }

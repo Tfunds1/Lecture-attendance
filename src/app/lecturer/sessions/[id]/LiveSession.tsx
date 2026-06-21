@@ -33,12 +33,14 @@ export function LiveSession({
   courseCode,
   shortCode,
   acceptingUntil,
+  windowSeconds,
 }: {
   sessionId: string;
   initiallyActive: boolean;
   courseCode: string;
   shortCode: string | null;
   acceptingUntil: string | null;
+  windowSeconds: number;
 }) {
   const [active, setActive] = useState(initiallyActive);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -149,8 +151,14 @@ export function LiveSession({
   // closing without its own timer. A null acceptingUntil means no limit.
   const acceptingUntilDate = acceptingUntil ? new Date(acceptingUntil) : null;
   const windowOpen = acceptingUntilDate ? Date.now() <= acceptingUntilDate.getTime() : true;
+  // For short windows (under 5 min) HH:MM hides the precision the lecturer
+  // actually cares about, so show seconds too.
+  const timeFormat: Intl.DateTimeFormatOptions =
+    windowSeconds < 300
+      ? { hour: "2-digit", minute: "2-digit", second: "2-digit" }
+      : { hour: "2-digit", minute: "2-digit" };
   const windowTime = acceptingUntilDate
-    ? acceptingUntilDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    ? acceptingUntilDate.toLocaleTimeString([], timeFormat)
     : "";
 
   return (

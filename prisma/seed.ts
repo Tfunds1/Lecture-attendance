@@ -105,9 +105,12 @@ async function main() {
     data: [...allEnroll, ...dbEnroll, ...aiEnroll],
   });
 
-  // Two live sessions so both attendance-window states are visible in the demo:
-  // one still accepting, one whose window has already closed (but is still
-  // active, so the lecturer keeps the live roster). windowMinutes = 15 each.
+  // Live sessions covering every attendance-window state in the demo:
+  //   - one minutes-mode window still accepting
+  //   - one minutes-mode window already closed (but still active, so the
+  //     lecturer keeps the live roster)
+  //   - one seconds-mode (60s) window so the seconds display is visible
+  // windowSeconds = 900 (15 min) for the two minutes-mode sessions.
   const now = Date.now();
 
   // CSC401 — started 5 min ago, window open until ~10 min from now.
@@ -117,7 +120,7 @@ async function main() {
       secret: randomBytes(32).toString("hex"),
       shortCode: "7K2P9M",
       startedAt: new Date(now - 5 * 60_000),
-      windowMinutes: 15,
+      windowSeconds: 900,
       acceptingUntil: new Date(now - 5 * 60_000 + 15 * 60_000),
       active: true,
     },
@@ -130,8 +133,22 @@ async function main() {
       secret: randomBytes(32).toString("hex"),
       shortCode: "4R8T6W",
       startedAt: new Date(now - 30 * 60_000),
-      windowMinutes: 15,
+      windowSeconds: 900,
       acceptingUntil: new Date(now - 30 * 60_000 + 15 * 60_000),
+      active: true,
+    },
+  });
+
+  // CSC411 — seconds-mode demo: a 60-second snapshot window, just started, so
+  // the lecturer's live view shows the HH:MM:SS "Accepting until" badge.
+  await prisma.session.create({
+    data: {
+      courseId: csc411.id,
+      secret: randomBytes(32).toString("hex"),
+      shortCode: "9S3D1F",
+      startedAt: new Date(now),
+      windowSeconds: 60,
+      acceptingUntil: new Date(now + 60_000),
       active: true,
     },
   });
