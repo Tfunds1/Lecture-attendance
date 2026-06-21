@@ -176,15 +176,6 @@ function LoginForm() {
           </button>
         </form>
       </div>
-
-      {/* Demo accounts — kept for the project review, styled as a quiet helper. */}
-      <div className="mt-4 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center text-xs text-slate-500">
-        <span className="font-medium text-slate-600">Demo accounts</span> · password{" "}
-        <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-700">password123</code>
-        <div className="mt-1 font-mono text-[11px] text-slate-400">
-          admin@uni.edu · adebayo@uni.edu · csc.2021.001@uni.edu
-        </div>
-      </div>
     </div>
   );
 }
